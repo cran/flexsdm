@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>flexsdm: Modeling a rare species</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">flexsdm: Modeling a rare species</h1>
+
+
+
+<div id="intro" class="section level1">
+<h1>Intro</h1>
+<p>Creating SDMs for rare or poorly known species can be a difficult
+task. Occurrence data are often limited to only a few observation, which
+can lead to model overfitting, especially when using many predictor
+variables to build models. However, researchers are often most
+interested in building SDMs for rare species, as they are often the most
+threatened and in need of conservation action.</p>
+<p>To address the issues associated with modeling the spatial
+distributions of rare species, Lomba et al. (2010) and Breiner et
+al. (2015) proposed the method “ensemble of small models” or ESM. In
+ESM, many bivariate models with pairwise combinations of each predictor
+variable, then an ensemble is performed. In <em>flexsdm</em>, the
+ensemble is created using the average of suitability across all of the
+“small models”, weighted by Somers’ D (D = 2 * (AUC-.5)). It is
+important to note that this method does not allow the use of categorical
+variables (such as soil type).</p>
+<p>The practical applications of ESMs could include identifying areas
+for reintroduction of rare species or areas for establishing new
+populations, especially in the face of climate change. For example,
+Dubos et al. (2021) used a variation of ESM to identify areas that may
+remain suitable under climate change for two rare species from
+Madagascar: the golden mantella frog (<em>Mantella aurantiaca</em>) and
+the Manapany day gecko (<em>Phelsuma inexpectata</em>).</p>
+<p>In this example, we will walk through the process of comparing ESM to
+traditional modeling approaches for <em>Hesperocyparis stephensonii</em>
+(Cuyamaca cypress), a conifer tree species that is endemic to southern
+California. This species is listed as Critically Endangered by the IUCN
+and is only found in the headwaters of King Creek in San Diego County.
+The Cedar Fire of 2003 left only 30-40 surviving trees. In this
+hypothetical example, we are searching for suitable areas where it might
+be possible to establish new populations of this species, with the hopes
+of decreasing the species’ future extinction risk.</p>
+<div id="data" class="section level2">
+<h2>Data</h2>
+<p>For our models, we will use four environmental variables that
+influence plant distributions in California: available
+evapotranspiration (aet), climatic water deficit (cwd), maximum
+temperature of the warmest month (tmx), and minimum temperature of the
+coldest month (tmn). Our occurrence data include 21 geo-referenced
+observations downloaded from the online database Calflora.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># devtools::install_github(&#39;sjevelazco/flexsdm&#39;)</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(flexsdm)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">library</span>(terra)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="co"># environmental data</span></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>somevar <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">&quot;external/somevar.tif&quot;</span>, <span class="at">package =</span> <span class="st">&quot;flexsdm&quot;</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>somevar <span class="ot">&lt;-</span> terra<span class="sc">::</span><span class="fu">rast</span>(somevar)</span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a><span class="fu">names</span>(somevar) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;aet&quot;</span>, <span class="st">&quot;cwd&quot;</span>, <span class="st">&quot;tmx&quot;</span>, <span class="st">&quot;tmn&quot;</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="co"># species occurence data (presence-only)</span></span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a><span class="fu">data</span>(hespero)</span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a>hespero <span class="ot">&lt;-</span> hespero <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span>id)</span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a><span class="co"># California ecoregions</span></span>
+<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a>regions <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">&quot;external/regions.tif&quot;</span>, <span class="at">package =</span> <span class="st">&quot;flexsdm&quot;</span>)</span>
+<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a>regions <span class="ot">&lt;-</span> terra<span class="sc">::</span><span class="fu">rast</span>(regions)</span>
+<span id="cb1-18"><a href="#cb1-18" tabindex="-1"></a>regions <span class="ot">&lt;-</span> <span class="fu">as.polygons</span>(regions)</span>
+<span id="cb1-19"><a href="#cb1-19" tabindex="-1"></a>sp_region <span class="ot">&lt;-</span> terra<span class="sc">::</span><span class="fu">subset</span>(regions, regions<span class="sc">$</span>category <span class="sc">==</span> <span class="st">&quot;SCR&quot;</span>) <span class="co"># ecoregion where *Hesperocyparis stephensonii* is found</span></span>
+<span id="cb1-20"><a href="#cb1-20" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" tabindex="-1"></a><span class="co"># visualize the species occurrences</span></span>
+<span id="cb1-22"><a href="#cb1-22" tabindex="-1"></a><span class="fu">plot</span>(</span>
+<span id="cb1-23"><a href="#cb1-23" tabindex="-1"></a>  sp_region,</span>
+<span id="cb1-24"><a href="#cb1-24" tabindex="-1"></a>  <span class="at">col =</span> <span class="st">&quot;gray80&quot;</span>,</span>
+<span id="cb1-25"><a href="#cb1-25" tabindex="-1"></a>  <span class="at">legend =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb1-26"><a href="#cb1-26" tabindex="-1"></a>  <span class="at">axes =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb1-27"><a href="#cb1-27" tabindex="-1"></a>  <span class="at">main =</span> <span class="st">&quot;Hesperocyparis stephensonii occurrences&quot;</span></span>
+<span id="cb1-28"><a href="#cb1-28" tabindex="-1"></a>)</span>
+<span id="cb1-29"><a href="#cb1-29" tabindex="-1"></a><span class="fu">points</span>(hespero[, <span class="fu">c</span>(<span class="st">&quot;x&quot;</span>, <span class="st">&quot;y&quot;</span>)], <span class="at">col =</span> <span class="st">&quot;black&quot;</span>, <span class="at">pch =</span> <span class="dv">16</span>)</span>
+<span id="cb1-30"><a href="#cb1-30" tabindex="-1"></a>cols <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="st">&quot;gray80&quot;</span>, <span class="dv">8</span>)</span>
+<span id="cb1-31"><a href="#cb1-31" tabindex="-1"></a>cols[regions<span class="sc">$</span>category <span class="sc">==</span> <span class="st">&quot;SCR&quot;</span>] <span class="ot">&lt;-</span> <span class="st">&quot;yellow&quot;</span></span>
+<span id="cb1-32"><a href="#cb1-32" tabindex="-1"></a>terra<span class="sc">::</span><span class="fu">inset</span>(</span>
+<span id="cb1-33"><a href="#cb1-33" tabindex="-1"></a>  regions,</span>
+<span id="cb1-34"><a href="#cb1-34" tabindex="-1"></a>  <span class="at">loc =</span> <span class="st">&quot;bottomleft&quot;</span>,</span>
+<span id="cb1-35"><a href="#cb1-35" tabindex="-1"></a>  <span class="at">scale =</span> .<span class="dv">3</span>,</span>
+<span id="cb1-36"><a href="#cb1-36" tabindex="-1"></a>  <span class="at">col =</span> cols</span>
+<span id="cb1-37"><a href="#cb1-37" tabindex="-1"></a>)</span></code></pre></div>
+<div class="float">
+<img role="img" aria-label="plot of chunk raw data" src="data:image/png;base64,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" alt="plot of chunk raw data" />
+<div class="figcaption">plot of chunk raw data</div>
+</div>
+</div>
+<div id="delimit-calibration-area" class="section level2">
+<h2>Delimit calibration area</h2>
+<p>First, we must define our model’s calibration area. The
+<em>flexsdm</em> package offers several methods for defining the model
+calibration area. Here, we will use 25-km buffer areas around the
+presence points to select our pseudo-absence locations.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>ca <span class="ot">&lt;-</span> <span class="fu">calib_area</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>  <span class="at">data =</span> hespero,</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  <span class="at">x =</span> <span class="st">&quot;x&quot;</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>  <span class="at">y =</span> <span class="st">&quot;y&quot;</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>  <span class="at">method =</span> <span class="fu">c</span>(<span class="st">&quot;buffer&quot;</span>, <span class="at">width =</span> <span class="dv">25000</span>),</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>  <span class="at">crs =</span> <span class="fu">crs</span>(somevar)</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>)</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co"># visualize the species occurrences &amp; calibration area</span></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="fu">plot</span>(</span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>  sp_region,</span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>  <span class="at">col =</span> <span class="st">&quot;gray80&quot;</span>,</span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>  <span class="at">legend =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>  <span class="at">axes =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>  <span class="at">main =</span> <span class="st">&quot;Calibration area and occurrences&quot;</span></span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a>)</span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="fu">plot</span>(ca, <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="fu">points</span>(hespero[, <span class="fu">c</span>(<span class="st">&quot;x&quot;</span>, <span class="st">&quot;y&quot;</span>)], <span class="at">col =</span> <span class="st">&quot;black&quot;</span>, <span class="at">pch =</span> <span class="dv">16</span>)</span></code></pre></div>
+<div class="float">
+<img role="img" aria-label="plot of chunk calibration area" src="data:image/png;base64,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" alt="plot of chunk calibration area" />
+<div class="figcaption">plot of chunk calibration area</div>
+</div>
+</div>
+<div id="create-pseudo-absence-data" class="section level2">
+<h2>Create pseudo-absence data</h2>
+<p>As is often the case with rare species, we only have species presence
+data. However, most SDM methods require either pseudo-absence or
+background data. Here, we use our calibration area to produce
+pseudo-absence data that can be used in our SDMs.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># Sample the same number of species presences</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">10</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>psa <span class="ot">&lt;-</span> <span class="fu">sample_pseudoabs</span>(</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  <span class="at">data =</span> hespero,</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>  <span class="at">x =</span> <span class="st">&quot;x&quot;</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>  <span class="at">y =</span> <span class="st">&quot;y&quot;</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>  <span class="at">n =</span> <span class="fu">sum</span>(hespero<span class="sc">$</span>pr_ab), <span class="co"># selecting number of pseudo-absence points that is equal to number of presences</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>  <span class="at">method =</span> <span class="st">&quot;random&quot;</span>,</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>  <span class="at">rlayer =</span> somevar,</span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>  <span class="at">calibarea =</span> ca</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>)</span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co"># Visualize species presences and pseudo-absences</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="fu">plot</span>(</span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>  sp_region,</span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a>  <span class="at">col =</span> <span class="st">&quot;gray80&quot;</span>,</span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a>  <span class="at">legend =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a>  <span class="at">axes =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a>  <span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">289347</span>, <span class="dv">353284</span>),</span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a>  <span class="at">ylim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">598052</span>, <span class="sc">-</span><span class="dv">520709</span>),</span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a>  <span class="at">main =</span> <span class="st">&quot;Presence = yellow, Pseudo-absence = black&quot;</span></span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a>)</span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a><span class="fu">plot</span>(ca, <span class="at">add =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="fu">points</span>(psa[, <span class="fu">c</span>(<span class="st">&quot;x&quot;</span>, <span class="st">&quot;y&quot;</span>)], <span class="at">cex =</span> <span class="fl">0.8</span>, <span class="at">pch =</span> <span class="dv">16</span>, <span class="at">col =</span> <span class="st">&quot;black&quot;</span>) <span class="co"># Pseudo-absences</span></span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a><span class="fu">points</span>(hespero[, <span class="fu">c</span>(<span class="st">&quot;x&quot;</span>, <span class="st">&quot;y&quot;</span>)], <span class="at">col =</span> <span class="st">&quot;yellow&quot;</span>, <span class="at">pch =</span> <span class="dv">16</span>, <span class="at">cex =</span> <span class="fl">1.5</span>) <span class="co"># Presences</span></span></code></pre></div>
+<div class="float">
+<img role="img" aria-label="plot of chunk pseudo-absence data" src="data:image/png;base64,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" alt="plot of chunk pseudo-absence data" />
+<div class="figcaption">plot of chunk pseudo-absence data</div>
+</div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co"># Bind a presences and pseudo-absences</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>hespero_pa <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(hespero, psa)</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>hespero_pa <span class="co"># Presence-Pseudo-absence database</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">#&gt; # A tibble: 42 × 3</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">#&gt;          x        y pr_ab</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt;      &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt;  1 316923. -557843.     1</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt;  2 317155. -559234.     1</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt;  3 316960. -558186.     1</span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt;  4 314347. -559648.     1</span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt;  5 317348. -557349.     1</span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt;  6 316753. -559679.     1</span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt;  7 316777. -558644.     1</span></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt;  8 317050. -559043.     1</span></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co">#&gt;  9 316655. -559928.     1</span></span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="co">#&gt; 10 316418. -567439.     1</span></span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt; # ℹ 32 more rows</span></span></code></pre></div>
+</div>
+<div id="partition-data-for-evaluating-models" class="section level2">
+<h2>Partition data for evaluating models</h2>
+<p>To evaluate model performance, we need to specify data for testing
+and training. <em>flexsdm</em> offers a range of random and spatial and
+random data partition methods for evaluating SDMs. Here we will use
+repeated K-fold cross-validation, which is a suitable partition approach
+for performing ESM.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">10</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co"># Repeated K-fold method</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>hespero_pa2 <span class="ot">&lt;-</span> <span class="fu">part_random</span>(</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  <span class="at">data =</span> hespero_pa,</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  <span class="at">pr_ab =</span> <span class="st">&quot;pr_ab&quot;</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>  <span class="at">method =</span> <span class="fu">c</span>(<span class="at">method =</span> <span class="st">&quot;rep_kfold&quot;</span>, <span class="at">folds =</span> <span class="dv">5</span>, <span class="at">replicates =</span> <span class="dv">10</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="extracting-environmental-values" class="section level2">
+<h2>Extracting environmental values</h2>
+<p>Next, we extract the values of our four environmental predictors at
+the presence and pseudo-absence locations.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>hespero_pa3 <span class="ot">&lt;-</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  <span class="fu">sdm_extract</span>(</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>    <span class="at">data =</span> hespero_pa2,</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;x&quot;</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;y&quot;</span>,</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>    <span class="at">env_layer =</span> somevar,</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>    <span class="at">variables =</span> <span class="fu">c</span>(<span class="st">&quot;aet&quot;</span>, <span class="st">&quot;cwd&quot;</span>, <span class="st">&quot;tmx&quot;</span>, <span class="st">&quot;tmn&quot;</span>)</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>  )</span></code></pre></div>
+</div>
+<div id="modeling" class="section level2">
+<h2>Modeling</h2>
+<div id="standard-models" class="section level3">
+<h3>Standard models</h3>
+<p>First, let’s use three standard algorithms to model the distribution
+of <em>Hesperocyparis stephensonii</em>: GLM, GBM, and SVM. In this
+case, we use our calibration area for making our predictions.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>mglm <span class="ot">&lt;-</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>  <span class="fu">fit_glm</span>(</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>    <span class="at">data =</span> hespero_pa3,</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>    <span class="at">response =</span> <span class="st">&quot;pr_ab&quot;</span>,</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>    <span class="at">predictors =</span> <span class="fu">c</span>(<span class="st">&quot;aet&quot;</span>, <span class="st">&quot;cwd&quot;</span>, <span class="st">&quot;tmx&quot;</span>, <span class="st">&quot;tmn&quot;</span>),</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>    <span class="at">partition =</span> <span class="st">&quot;.part&quot;</span>,</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>    <span class="at">thr =</span> <span class="st">&quot;max_sens_spec&quot;</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>  )</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co">#&gt; Formula used for model fitting:</span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt; pr_ab ~ aet + cwd + tmx + tmn + I(aet^2) + I(cwd^2) + I(tmx^2) + I(tmn^2)</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt; Replica number: 1/10</span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a><span class="co">#&gt; Replica number: 2/10</span></span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a><span class="co">#&gt; Replica number: 3/10</span></span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-29"><a href="#cb7-29" tabindex="-1"></a><span class="co">#&gt; Replica number: 4/10</span></span>
+<span id="cb7-30"><a href="#cb7-30" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-31"><a href="#cb7-31" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-32"><a href="#cb7-32" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-33"><a href="#cb7-33" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-34"><a href="#cb7-34" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-35"><a href="#cb7-35" tabindex="-1"></a><span class="co">#&gt; Replica number: 5/10</span></span>
+<span id="cb7-36"><a href="#cb7-36" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-37"><a href="#cb7-37" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-38"><a href="#cb7-38" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-39"><a href="#cb7-39" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-40"><a href="#cb7-40" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-41"><a href="#cb7-41" tabindex="-1"></a><span class="co">#&gt; Replica number: 6/10</span></span>
+<span id="cb7-42"><a href="#cb7-42" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-43"><a href="#cb7-43" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-44"><a href="#cb7-44" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-45"><a href="#cb7-45" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-46"><a href="#cb7-46" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-47"><a href="#cb7-47" tabindex="-1"></a><span class="co">#&gt; Replica number: 7/10</span></span>
+<span id="cb7-48"><a href="#cb7-48" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-49"><a href="#cb7-49" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-50"><a href="#cb7-50" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-51"><a href="#cb7-51" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-52"><a href="#cb7-52" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-53"><a href="#cb7-53" tabindex="-1"></a><span class="co">#&gt; Replica number: 8/10</span></span>
+<span id="cb7-54"><a href="#cb7-54" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-55"><a href="#cb7-55" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-56"><a href="#cb7-56" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-57"><a href="#cb7-57" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-58"><a href="#cb7-58" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-59"><a href="#cb7-59" tabindex="-1"></a><span class="co">#&gt; Replica number: 9/10</span></span>
+<span id="cb7-60"><a href="#cb7-60" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-61"><a href="#cb7-61" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-62"><a href="#cb7-62" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-63"><a href="#cb7-63" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-64"><a href="#cb7-64" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-65"><a href="#cb7-65" tabindex="-1"></a><span class="co">#&gt; Replica number: 10/10</span></span>
+<span id="cb7-66"><a href="#cb7-66" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-67"><a href="#cb7-67" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-68"><a href="#cb7-68" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-69"><a href="#cb7-69" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-70"><a href="#cb7-70" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-71"><a href="#cb7-71" tabindex="-1"></a></span>
+<span id="cb7-72"><a href="#cb7-72" tabindex="-1"></a>mgbm <span class="ot">&lt;-</span> <span class="fu">fit_gbm</span>(</span>
+<span id="cb7-73"><a href="#cb7-73" tabindex="-1"></a>  <span class="at">data =</span> hespero_pa3,</span>
+<span id="cb7-74"><a href="#cb7-74" tabindex="-1"></a>  <span class="at">response =</span> <span class="st">&quot;pr_ab&quot;</span>,</span>
+<span id="cb7-75"><a href="#cb7-75" tabindex="-1"></a>  <span class="at">predictors =</span> <span class="fu">c</span>(<span class="st">&quot;aet&quot;</span>, <span class="st">&quot;cwd&quot;</span>, <span class="st">&quot;tmx&quot;</span>, <span class="st">&quot;tmn&quot;</span>),</span>
+<span id="cb7-76"><a href="#cb7-76" tabindex="-1"></a>  <span class="at">partition =</span> <span class="st">&quot;.part&quot;</span>,</span>
+<span id="cb7-77"><a href="#cb7-77" tabindex="-1"></a>  <span class="at">thr =</span> <span class="st">&quot;max_sens_spec&quot;</span></span>
+<span id="cb7-78"><a href="#cb7-78" tabindex="-1"></a>)</span>
+<span id="cb7-79"><a href="#cb7-79" tabindex="-1"></a><span class="co">#&gt; Formula used for model fitting:</span></span>
+<span id="cb7-80"><a href="#cb7-80" tabindex="-1"></a><span class="co">#&gt; pr_ab ~ aet + cwd + tmx + tmn</span></span>
+<span id="cb7-81"><a href="#cb7-81" tabindex="-1"></a><span class="co">#&gt; Replica number: 1/10</span></span>
+<span id="cb7-82"><a href="#cb7-82" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-83"><a href="#cb7-83" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-84"><a href="#cb7-84" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-85"><a href="#cb7-85" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-86"><a href="#cb7-86" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-87"><a href="#cb7-87" tabindex="-1"></a><span class="co">#&gt; Replica number: 2/10</span></span>
+<span id="cb7-88"><a href="#cb7-88" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-89"><a href="#cb7-89" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-90"><a href="#cb7-90" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-91"><a href="#cb7-91" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-92"><a href="#cb7-92" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-93"><a href="#cb7-93" tabindex="-1"></a><span class="co">#&gt; Replica number: 3/10</span></span>
+<span id="cb7-94"><a href="#cb7-94" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-95"><a href="#cb7-95" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-96"><a href="#cb7-96" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-97"><a href="#cb7-97" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-98"><a href="#cb7-98" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-99"><a href="#cb7-99" tabindex="-1"></a><span class="co">#&gt; Replica number: 4/10</span></span>
+<span id="cb7-100"><a href="#cb7-100" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-101"><a href="#cb7-101" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-102"><a href="#cb7-102" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-103"><a href="#cb7-103" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-104"><a href="#cb7-104" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-105"><a href="#cb7-105" tabindex="-1"></a><span class="co">#&gt; Replica number: 5/10</span></span>
+<span id="cb7-106"><a href="#cb7-106" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-107"><a href="#cb7-107" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-108"><a href="#cb7-108" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-109"><a href="#cb7-109" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-110"><a href="#cb7-110" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-111"><a href="#cb7-111" tabindex="-1"></a><span class="co">#&gt; Replica number: 6/10</span></span>
+<span id="cb7-112"><a href="#cb7-112" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-113"><a href="#cb7-113" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-114"><a href="#cb7-114" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-115"><a href="#cb7-115" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-116"><a href="#cb7-116" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-117"><a href="#cb7-117" tabindex="-1"></a><span class="co">#&gt; Replica number: 7/10</span></span>
+<span id="cb7-118"><a href="#cb7-118" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-119"><a href="#cb7-119" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-120"><a href="#cb7-120" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-121"><a href="#cb7-121" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-122"><a href="#cb7-122" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-123"><a href="#cb7-123" tabindex="-1"></a><span class="co">#&gt; Replica number: 8/10</span></span>
+<span id="cb7-124"><a href="#cb7-124" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-125"><a href="#cb7-125" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-126"><a href="#cb7-126" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-127"><a href="#cb7-127" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-128"><a href="#cb7-128" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-129"><a href="#cb7-129" tabindex="-1"></a><span class="co">#&gt; Replica number: 9/10</span></span>
+<span id="cb7-130"><a href="#cb7-130" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-131"><a href="#cb7-131" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-132"><a href="#cb7-132" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-133"><a href="#cb7-133" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-134"><a href="#cb7-134" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-135"><a href="#cb7-135" tabindex="-1"></a><span class="co">#&gt; Replica number: 10/10</span></span>
+<span id="cb7-136"><a href="#cb7-136" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-137"><a href="#cb7-137" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-138"><a href="#cb7-138" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-139"><a href="#cb7-139" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-140"><a href="#cb7-140" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-141"><a href="#cb7-141" tabindex="-1"></a></span>
+<span id="cb7-142"><a href="#cb7-142" tabindex="-1"></a>msvm <span class="ot">&lt;-</span> <span class="fu">fit_svm</span>(</span>
+<span id="cb7-143"><a href="#cb7-143" tabindex="-1"></a>  <span class="at">data =</span> hespero_pa3,</span>
+<span id="cb7-144"><a href="#cb7-144" tabindex="-1"></a>  <span class="at">response =</span> <span class="st">&quot;pr_ab&quot;</span>,</span>
+<span id="cb7-145"><a href="#cb7-145" tabindex="-1"></a>  <span class="at">predictors =</span> <span class="fu">c</span>(<span class="st">&quot;aet&quot;</span>, <span class="st">&quot;cwd&quot;</span>, <span class="st">&quot;tmx&quot;</span>, <span class="st">&quot;tmn&quot;</span>),</span>
+<span id="cb7-146"><a href="#cb7-146" tabindex="-1"></a>  <span class="at">partition =</span> <span class="st">&quot;.part&quot;</span>,</span>
+<span id="cb7-147"><a href="#cb7-147" tabindex="-1"></a>  <span class="at">thr =</span> <span class="st">&quot;max_sens_spec&quot;</span></span>
+<span id="cb7-148"><a href="#cb7-148" tabindex="-1"></a>)</span>
+<span id="cb7-149"><a href="#cb7-149" tabindex="-1"></a><span class="co">#&gt; Formula used for model fitting:</span></span>
+<span id="cb7-150"><a href="#cb7-150" tabindex="-1"></a><span class="co">#&gt; pr_ab ~ aet + cwd + tmx + tmn</span></span>
+<span id="cb7-151"><a href="#cb7-151" tabindex="-1"></a><span class="co">#&gt; Replica number: 1/10</span></span>
+<span id="cb7-152"><a href="#cb7-152" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-153"><a href="#cb7-153" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-154"><a href="#cb7-154" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-155"><a href="#cb7-155" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-156"><a href="#cb7-156" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-157"><a href="#cb7-157" tabindex="-1"></a><span class="co">#&gt; Replica number: 2/10</span></span>
+<span id="cb7-158"><a href="#cb7-158" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-159"><a href="#cb7-159" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-160"><a href="#cb7-160" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-161"><a href="#cb7-161" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-162"><a href="#cb7-162" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-163"><a href="#cb7-163" tabindex="-1"></a><span class="co">#&gt; Replica number: 3/10</span></span>
+<span id="cb7-164"><a href="#cb7-164" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-165"><a href="#cb7-165" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-166"><a href="#cb7-166" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-167"><a href="#cb7-167" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-168"><a href="#cb7-168" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-169"><a href="#cb7-169" tabindex="-1"></a><span class="co">#&gt; Replica number: 4/10</span></span>
+<span id="cb7-170"><a href="#cb7-170" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-171"><a href="#cb7-171" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-172"><a href="#cb7-172" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-173"><a href="#cb7-173" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-174"><a href="#cb7-174" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-175"><a href="#cb7-175" tabindex="-1"></a><span class="co">#&gt; Replica number: 5/10</span></span>
+<span id="cb7-176"><a href="#cb7-176" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-177"><a href="#cb7-177" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-178"><a href="#cb7-178" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-179"><a href="#cb7-179" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-180"><a href="#cb7-180" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-181"><a href="#cb7-181" tabindex="-1"></a><span class="co">#&gt; Replica number: 6/10</span></span>
+<span id="cb7-182"><a href="#cb7-182" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-183"><a href="#cb7-183" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-184"><a href="#cb7-184" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-185"><a href="#cb7-185" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-186"><a href="#cb7-186" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-187"><a href="#cb7-187" tabindex="-1"></a><span class="co">#&gt; Replica number: 7/10</span></span>
+<span id="cb7-188"><a href="#cb7-188" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-189"><a href="#cb7-189" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-190"><a href="#cb7-190" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-191"><a href="#cb7-191" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-192"><a href="#cb7-192" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-193"><a href="#cb7-193" tabindex="-1"></a><span class="co">#&gt; Replica number: 8/10</span></span>
+<span id="cb7-194"><a href="#cb7-194" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-195"><a href="#cb7-195" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-196"><a href="#cb7-196" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-197"><a href="#cb7-197" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-198"><a href="#cb7-198" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-199"><a href="#cb7-199" tabindex="-1"></a><span class="co">#&gt; Replica number: 9/10</span></span>
+<span id="cb7-200"><a href="#cb7-200" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-201"><a href="#cb7-201" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-202"><a href="#cb7-202" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-203"><a href="#cb7-203" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-204"><a href="#cb7-204" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-205"><a href="#cb7-205" tabindex="-1"></a><span class="co">#&gt; Replica number: 10/10</span></span>
+<span id="cb7-206"><a href="#cb7-206" tabindex="-1"></a><span class="co">#&gt; Partition number: 1/5</span></span>
+<span id="cb7-207"><a href="#cb7-207" tabindex="-1"></a><span class="co">#&gt; Partition number: 2/5</span></span>
+<span id="cb7-208"><a href="#cb7-208" tabindex="-1"></a><span class="co">#&gt; Partition number: 3/5</span></span>
+<span id="cb7-209"><a href="#cb7-209" tabindex="-1"></a><span class="co">#&gt; Partition number: 4/5</span></span>
+<span id="cb7-210"><a href="#cb7-210" tabindex="-1"></a><span class="co">#&gt; Partition number: 5/5</span></span>
+<span id="cb7-211"><a href="#cb7-211" tabindex="-1"></a></span>
+<span id="cb7-212"><a href="#cb7-212" tabindex="-1"></a></span>
+<span id="cb7-213"><a href="#cb7-213" tabindex="-1"></a>mpred <span class="ot">&lt;-</span> <span class="fu">sdm_predict</span>(</span>
+<span id="cb7-214"><a href="#cb7-214" tabindex="-1"></a>  <span class="at">models =</span> <span class="fu">list</span>(mglm, mgbm, msvm),</span>
+<span id="cb7-215"><a href="#cb7-215" tabindex="-1"></a>  <span class="at">pred =</span> somevar,</span>
+<span id="cb7-216"><a href="#cb7-216" tabindex="-1"></a>  <span class="at">con_thr =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb7-217"><a href="#cb7-217" tabindex="-1"></a>  <span class="at">predict_area =</span> ca</span>
+<span id="cb7-218"><a href="#cb7-218" tabindex="-1"></a>)</span>
+<span id="cb7-219"><a href="#cb7-219" tabindex="-1"></a><span class="co">#&gt; Predicting list of individual models</span></span></code></pre></div>
+</div>
+<div id="ensemble-of-small-models" class="section level3">
+<h3>Ensemble of small models</h3>
+<p>Now let’s try each of these algorithms with the ESM approach. Note
+that when predicting an ESM, it is possible to only process one at a
+time.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>eglm <span class="ot">&lt;-</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>  <span class="fu">esm_glm</span>(</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>    <span class="at">data =</span> hespero_pa3,</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>    <span class="at">response =</span> <span class="st">&quot;pr_ab&quot;</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>    <span class="at">predictors =</span> <span class="fu">c</span>(<span class="st">&quot;aet&quot;</span>, <span class="st">&quot;cwd&quot;</span>, <span class="st">&quot;tmx&quot;</span>, <span class="st">&quot;tmn&quot;</span>),</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>    <span class="at">partition =</span> <span class="st">&quot;.part&quot;</span>,</span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>    <span class="at">thr =</span> <span class="st">&quot;max_sens_spec&quot;</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>  )</span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>  <span class="sc">|</span>                                                                            </span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>  <span class="er">|</span>                                                                      <span class="er">|</span>   <span class="dv">0</span>%</span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a>  <span class="sc">|</span>                                                                            </span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>  <span class="er">|============</span>                                                          <span class="er">|</span>  <span class="dv">17</span>%</span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a>  <span class="sc">|</span>                                                                            </span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a>  <span class="er">|=======================</span>                                               <span class="er">|</span>  <span class="dv">33</span>%</span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a>  <span class="sc">|</span>                                                                            </span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a>  <span class="er">|===================================</span>                                   <span class="er">|</span>  <span class="dv">50</span>%</span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a>  <span class="sc">|</span>                                                                            </span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a>  <span class="er">|===============================================</span>                       <span class="er">|</span>  <span class="dv">67</span>%</span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a>  <span class="sc">|</span>                                                                            </span>
+<span id="cb8-21"><a href="#cb8-21" tabindex="-1"></a>  <span class="er">|==========================================================</span>            <span class="er">|</span>  <span class="dv">83</span>%</span>
+<span id="cb8-22"><a href="#cb8-22" tabindex="-1"></a>  <span class="sc">|</span>                                                                            </span>
+<span id="cb8-23"><a href="#cb8-23" tabindex="-1"></a>  <span class="er">|======================================================================|</span> <span class="dv">100</span>%</span>
+<span id="cb8-24"><a href="#cb8-24" tabindex="-1"></a></span>
+<span id="cb8-25"><a href="#cb8-25" tabindex="-1"></a>egbm <span class="ot">&lt;-</span> <span class="fu">esm_gbm</span>(</span>
+<span id="cb8-26"><a href="#cb8-26" tabindex="-1"></a>  <span class="at">data =</span> hespero_pa3,</span>
+<span id="cb8-27"><a href="#cb8-27" tabindex="-1"></a>  <span class="at">response =</span> <span class="st">&quot;pr_ab&quot;</span>,</span>
+<span id="cb8-28"><a href="#cb8-28" tabindex="-1"></a>  <span class="at">predictors =</span> <span class="fu">c</span>(<span class="st">&quot;aet&quot;</span>, <span class="st">&quot;cwd&quot;</span>, <span class="st">&quot;tmx&quot;</span>, <span class="st">&quot;tmn&quot;</span>),</span>
+<span id="cb8-29"><a href="#cb8-29" tabindex="-1"></a>  <span class="at">partition =</span> <span class="st">&quot;.part&quot;</span>,</span>
+<span id="cb8-30"><a href="#cb8-30" tabindex="-1"></a>  <span class="at">thr =</span> <span class="st">&quot;max_sens_spec&quot;</span></span>
+<span id="cb8-31"><a href="#cb8-31" tabindex="-1"></a>)</span>
+<span id="cb8-32"><a href="#cb8-32" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-33"><a href="#cb8-33" tabindex="-1"></a>  <span class="sc">|</span>                                                                            </span>
+<span id="cb8-34"><a href="#cb8-34" tabindex="-1"></a>  <span class="er">|</span>                                                                      <span class="er">|</span>   <span class="dv">0</span>%</span>
+<span id="cb8-35"><a href="#cb8-35" tabindex="-1"></a>  <span class="sc">|</span>                                                                            </span>
+<span id="cb8-36"><a href="#cb8-36" tabindex="-1"></a>  <span class="er">|============</span>                                                          <span class="er">|</span>  <span class="dv">17</span>%</span>
+<span id="cb8-37"><a href="#cb8-37" tabindex="-1"></a>  <span class="sc">|</span>                                                                            </span>
+<span id="cb8-38"><a href="#cb8-38" tabindex="-1"></a>  <span class="er">|=======================</span>                                               <span class="er">|</span>  <span class="dv">33</span>%</span>
+<span id="cb8-39"><a href="#cb8-39" tabindex="-1"></a>  <span class="sc">|</span>                                                                            </span>
+<span id="cb8-40"><a href="#cb8-40" tabindex="-1"></a>  <span class="er">|===================================</span>                                   <span class="er">|</span>  <span class="dv">50</span>%</span>
+<span id="cb8-41"><a href="#cb8-41" tabindex="-1"></a>  <span class="sc">|</span>                                                                            </span>
+<span id="cb8-42"><a href="#cb8-42" tabindex="-1"></a>  <span class="er">|===============================================</span>                       <span class="er">|</span>  <span class="dv">67</span>%</span>
+<span id="cb8-43"><a href="#cb8-43" tabindex="-1"></a>  <span class="sc">|</span>                                                                            </span>
+<span id="cb8-44"><a href="#cb8-44" tabindex="-1"></a>  <span class="er">|==========================================================</span>            <span class="er">|</span>  <span class="dv">83</span>%</span>
+<span id="cb8-45"><a href="#cb8-45" tabindex="-1"></a>  <span class="sc">|</span>                                                                            </span>
+<span id="cb8-46"><a href="#cb8-46" tabindex="-1"></a>  <span class="er">|======================================================================|</span> <span class="dv">100</span>%</span>
+<span id="cb8-47"><a href="#cb8-47" tabindex="-1"></a></span>
+<span id="cb8-48"><a href="#cb8-48" tabindex="-1"></a>esvm <span class="ot">&lt;-</span> <span class="fu">esm_svm</span>(</span>
+<span id="cb8-49"><a href="#cb8-49" tabindex="-1"></a>  <span class="at">data =</span> hespero_pa3,</span>
+<span id="cb8-50"><a href="#cb8-50" tabindex="-1"></a>  <span class="at">response =</span> <span class="st">&quot;pr_ab&quot;</span>,</span>
+<span id="cb8-51"><a href="#cb8-51" tabindex="-1"></a>  <span class="at">predictors =</span> <span class="fu">c</span>(<span class="st">&quot;aet&quot;</span>, <span class="st">&quot;cwd&quot;</span>, <span class="st">&quot;tmx&quot;</span>, <span class="st">&quot;tmn&quot;</span>),</span>
+<span id="cb8-52"><a href="#cb8-52" tabindex="-1"></a>  <span class="at">partition =</span> <span class="st">&quot;.part&quot;</span>,</span>
+<span id="cb8-53"><a href="#cb8-53" tabindex="-1"></a>  <span class="at">thr =</span> <span class="st">&quot;max_sens_spec&quot;</span></span>
+<span id="cb8-54"><a href="#cb8-54" tabindex="-1"></a>)</span>
+<span id="cb8-55"><a href="#cb8-55" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-56"><a href="#cb8-56" tabindex="-1"></a>  <span class="sc">|</span>                                                                            </span>
+<span id="cb8-57"><a href="#cb8-57" tabindex="-1"></a>  <span class="er">|</span>                                                                      <span class="er">|</span>   <span class="dv">0</span>%</span>
+<span id="cb8-58"><a href="#cb8-58" tabindex="-1"></a>  <span class="sc">|</span>                                                                            </span>
+<span id="cb8-59"><a href="#cb8-59" tabindex="-1"></a>  <span class="er">|============</span>                                                          <span class="er">|</span>  <span class="dv">17</span>%</span>
+<span id="cb8-60"><a href="#cb8-60" tabindex="-1"></a>  <span class="sc">|</span>                                                                            </span>
+<span id="cb8-61"><a href="#cb8-61" tabindex="-1"></a>  <span class="er">|=======================</span>                                               <span class="er">|</span>  <span class="dv">33</span>%</span>
+<span id="cb8-62"><a href="#cb8-62" tabindex="-1"></a>  <span class="sc">|</span>                                                                            </span>
+<span id="cb8-63"><a href="#cb8-63" tabindex="-1"></a>  <span class="er">|===================================</span>                                   <span class="er">|</span>  <span class="dv">50</span>%</span>
+<span id="cb8-64"><a href="#cb8-64" tabindex="-1"></a>  <span class="sc">|</span>                                                                            </span>
+<span id="cb8-65"><a href="#cb8-65" tabindex="-1"></a>  <span class="er">|===============================================</span>                       <span class="er">|</span>  <span class="dv">67</span>%</span>
+<span id="cb8-66"><a href="#cb8-66" tabindex="-1"></a>  <span class="sc">|</span>                                                                            </span>
+<span id="cb8-67"><a href="#cb8-67" tabindex="-1"></a>  <span class="er">|==========================================================</span>            <span class="er">|</span>  <span class="dv">83</span>%</span>
+<span id="cb8-68"><a href="#cb8-68" tabindex="-1"></a>  <span class="sc">|</span>                                                                            </span>
+<span id="cb8-69"><a href="#cb8-69" tabindex="-1"></a>  <span class="er">|======================================================================|</span> <span class="dv">100</span>%</span>
+<span id="cb8-70"><a href="#cb8-70" tabindex="-1"></a></span>
+<span id="cb8-71"><a href="#cb8-71" tabindex="-1"></a></span>
+<span id="cb8-72"><a href="#cb8-72" tabindex="-1"></a>eglm_pred <span class="ot">&lt;-</span> <span class="fu">sdm_predict</span>(</span>
+<span id="cb8-73"><a href="#cb8-73" tabindex="-1"></a>  <span class="at">models =</span> eglm,</span>
+<span id="cb8-74"><a href="#cb8-74" tabindex="-1"></a>  <span class="at">pred =</span> somevar,</span>
+<span id="cb8-75"><a href="#cb8-75" tabindex="-1"></a>  <span class="at">con_thr =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb8-76"><a href="#cb8-76" tabindex="-1"></a>  <span class="at">predict_area =</span> ca</span>
+<span id="cb8-77"><a href="#cb8-77" tabindex="-1"></a>)</span>
+<span id="cb8-78"><a href="#cb8-78" tabindex="-1"></a><span class="co">#&gt; Predicting ensemble of small models</span></span>
+<span id="cb8-79"><a href="#cb8-79" tabindex="-1"></a></span>
+<span id="cb8-80"><a href="#cb8-80" tabindex="-1"></a>egbm_pred <span class="ot">&lt;-</span> <span class="fu">sdm_predict</span>(</span>
+<span id="cb8-81"><a href="#cb8-81" tabindex="-1"></a>  <span class="at">models =</span> egbm,</span>
+<span id="cb8-82"><a href="#cb8-82" tabindex="-1"></a>  <span class="at">pred =</span> somevar,</span>
+<span id="cb8-83"><a href="#cb8-83" tabindex="-1"></a>  <span class="at">con_thr =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb8-84"><a href="#cb8-84" tabindex="-1"></a>  <span class="at">predict_area =</span> ca</span>
+<span id="cb8-85"><a href="#cb8-85" tabindex="-1"></a>)</span>
+<span id="cb8-86"><a href="#cb8-86" tabindex="-1"></a><span class="co">#&gt; Predicting ensemble of small models</span></span>
+<span id="cb8-87"><a href="#cb8-87" tabindex="-1"></a></span>
+<span id="cb8-88"><a href="#cb8-88" tabindex="-1"></a>esvm_pred <span class="ot">&lt;-</span> <span class="fu">sdm_predict</span>(</span>
+<span id="cb8-89"><a href="#cb8-89" tabindex="-1"></a>  <span class="at">models =</span> esvm,</span>
+<span id="cb8-90"><a href="#cb8-90" tabindex="-1"></a>  <span class="at">pred =</span> somevar,</span>
+<span id="cb8-91"><a href="#cb8-91" tabindex="-1"></a>  <span class="at">con_thr =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb8-92"><a href="#cb8-92" tabindex="-1"></a>  <span class="at">predict_area =</span> ca</span>
+<span id="cb8-93"><a href="#cb8-93" tabindex="-1"></a>)</span>
+<span id="cb8-94"><a href="#cb8-94" tabindex="-1"></a><span class="co">#&gt; Predicting ensemble of small models</span></span></code></pre></div>
+</div>
+</div>
+<div id="comparing-our-models" class="section level2">
+<h2>Comparing our models</h2>
+<p>First, let’s take a look at the spatial predictions for our models.
+The spatial outputs suggest that the standard models tend to predict
+broader areas with high suitability values that the ESMs.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">2</span>))</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="fu">plot</span>(mpred<span class="sc">$</span>glm, <span class="at">main =</span> <span class="st">&quot;Standard GLM&quot;</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="co"># points(hespero$x, hespero$y, pch = 19)</span></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="fu">plot</span>(eglm_pred[[<span class="dv">1</span>]], <span class="at">main =</span> <span class="st">&quot;ESM GLM&quot;</span>)</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="co"># points(hespero$x, hespero$y, pch = 19)</span></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="fu">plot</span>(mpred<span class="sc">$</span>gbm, <span class="at">main =</span> <span class="st">&quot;Standard GBM&quot;</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co"># points(hespero$x, hespero$y, pch = 19)</span></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="fu">plot</span>(egbm_pred[[<span class="dv">1</span>]], <span class="at">main =</span> <span class="st">&quot;ESM GBM&quot;</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co"># points(hespero$x, hespero$y, pch = 19)</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="fu">plot</span>(mpred<span class="sc">$</span>svm, <span class="at">main =</span> <span class="st">&quot;Standard SVM&quot;</span>)</span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="co"># points(hespero$x, hespero$y, pch = 19)</span></span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="fu">plot</span>(esvm_pred[[<span class="dv">1</span>]], <span class="at">main =</span> <span class="st">&quot;ESM SVM&quot;</span>)</span></code></pre></div>
+<div class="float">
+<img role="img" aria-label="plot of chunk comparison maps" src="data:image/png;base64,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" alt="plot of chunk comparison maps" />
+<div class="figcaption">plot of chunk comparison maps</div>
+</div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># points(hespero$x, hespero$y, pch = 19)</span></span></code></pre></div>
+<p>Next, we look at some performance metrics for our models, which are
+based on our repeated k-folds cross-validation partition method. This
+can be easily done using the “sdm_summarize()” function in
+<em>flexsdm</em>. Here, we can see that AUC, TSS, and Jaccard index are
+higher for the ESMs than their corresponding standard model. However,
+the Boyce index and the Inverse Mean Absolute Error are slightly higher
+for the standard models.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>merge_df <span class="ot">&lt;-</span> <span class="fu">sdm_summarize</span>(<span class="at">models =</span> <span class="fu">list</span>(mglm, mgbm, msvm, eglm, egbm, esvm))</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>  merge_df <span class="sc">%&gt;%</span></span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">select</span>(</span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>      model,</span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>      <span class="at">AUC =</span> AUC_mean,</span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>      <span class="at">TSS =</span> TSS_mean,</span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a>      <span class="at">JACCARD =</span> JACCARD_mean,</span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a>      <span class="at">BOYCE =</span> BOYCE_mean,</span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a>      <span class="at">IMAE =</span> IMAE_mean</span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a>    )</span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a>)</span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left">model</th>
+<th align="right">AUC</th>
+<th align="right">TSS</th>
+<th align="right">JACCARD</th>
+<th align="right">BOYCE</th>
+<th align="right">IMAE</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">glm</td>
+<td align="right">0.826575</td>
+<td align="right">0.694</td>
+<td align="right">0.7539524</td>
+<td align="right">NA</td>
+<td align="right">0.7484773</td>
+</tr>
+<tr class="even">
+<td align="left">gbm</td>
+<td align="right">0.865000</td>
+<td align="right">0.802</td>
+<td align="right">0.8219524</td>
+<td align="right">NA</td>
+<td align="right">0.7456810</td>
+</tr>
+<tr class="odd">
+<td align="left">svm</td>
+<td align="right">0.916600</td>
+<td align="right">0.862</td>
+<td align="right">0.8756667</td>
+<td align="right">NA</td>
+<td align="right">0.7214870</td>
+</tr>
+<tr class="even">
+<td align="left">esm_glm</td>
+<td align="right">0.884000</td>
+<td align="right">0.793</td>
+<td align="right">0.8219524</td>
+<td align="right">NA</td>
+<td align="right">0.7058935</td>
+</tr>
+<tr class="odd">
+<td align="left">esm_gbm</td>
+<td align="right">0.927725</td>
+<td align="right">0.846</td>
+<td align="right">0.8550000</td>
+<td align="right">NA</td>
+<td align="right">0.7462015</td>
+</tr>
+<tr class="even">
+<td align="left">esm_svm</td>
+<td align="right">0.936300</td>
+<td align="right">0.876</td>
+<td align="right">0.8879524</td>
+<td align="right">NA</td>
+<td align="right">0.7131791</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="conclusions" class="section level2">
+<h2>Conclusions</h2>
+<p>Modeling decisions are context-dependent and must be made on a
+case-by-case basis. However, ESM is a useful approach for practitioners
+who are interested in modeling very rare species and want to avoid
+common model overfitting issues. As always when producing SDMs for
+“real-world” applications, it is important to consider spatial
+prediction patterns along with multiple model performance metrics.</p>
+</div>
+<div id="references" class="section level2">
+<h2>References</h2>
+<ol style="list-style-type: decimal">
+<li>Lomba, A., L. Pellissier, C. Randin, J. Vicente, F. Moreira, J.
+Honrado, and A. Guisan. 2010. Overcoming the rare species modelling
+paradox: A novel hierarchical framework applied to an Iberian endemic
+plant. Biological conservation 143:2647–2657. <a href="https://doi.org/10.1016/j.biocon.2010.07.007" class="uri">https://doi.org/10.1016/j.biocon.2010.07.007</a></li>
+<li>Breiner, F. T., Guisan, A., Bergamini, A., &amp; Nobis, M. P.
+(2015). Overcoming limitations of modelling rare species by using
+ensembles of small models. Methods in Ecology and Evolution, 6(10),
+1210–1218. <a href="https://doi.org/10.1111/2041-210X.12403" class="uri">https://doi.org/10.1111/2041-210X.12403</a></li>
+<li>Breiner, F. T., Nobis, M. P., Bergamini, A., &amp; Guisan, A.
+(2018). Optimizing ensembles of small models for predicting the
+distribution of species with few occurrences. Methods in Ecology and
+Evolution, 9(4), 802–808. <a href="https://doi.org/10.1111/2041-210X.12957" class="uri">https://doi.org/10.1111/2041-210X.12957</a></li>
+<li>Dubos, N., Montfort, F., Grinand, C., Nourtier, M., Deso, G.,
+Probst, J.-M., Razafimanahaka, J. H., Andriantsimanarilafy, R. R.,
+Rakotondrasoa, E. F., Razafindraibe, P., Jenkins, R., &amp; Crottini, A.
+(2021). Are narrow-ranging species doomed to extinction? Projected
+dramatic decline in future climate suitability of two highly threatened
+species. Perspectives in Ecology and Conservation, S2530064421000894. <a href="https://doi.org/10.1016/j.pecon.2021.10.002" class="uri">https://doi.org/10.1016/j.pecon.2021.10.002</a></li>
+</ol>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

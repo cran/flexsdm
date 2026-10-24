@@ -1,0 +1,235 @@
+## %######################################################%##
+#                                                          #
+####          Set of tests for testing errors           ####
+#                                                          #
+## %######################################################%##
+data(abies)
+
+# We will partition the data with the k-fold method
+abies2 <- part_random(
+  data = abies %>% dplyr::group_by(pr_ab) %>%
+    dplyr::slice_sample(prop = .1),
+  pr_ab = "pr_ab",
+  method = c(method = "kfold", folds = 2)
+)
+
+
+test_that("tuen", {
+  skip_on_cran()
+  # Hyper-parameter values for tuning
+  tune_grid <-
+    expand.grid(
+      mtry = c(1, 3),
+      ntree = c(200, 400)
+    )
+
+  raf_t <-
+    tune_raf(
+      data = abies2,
+      response = "pr_ab",
+      predictors = c("aet", "cwd", "awc", "depth"),
+      predictors_f = c("landform"),
+      partition = ".part",
+      grid = tune_grid,
+      thr = "max_sens_spec",
+      metric = "TSS"
+    )
+
+  expect_equal(class(raf_t), "list")
+  expect_equal(length(raf_t), 6)
+})
+
+
+test_that("tuen without ntree hyperparamenter", {
+  skip_on_cran()
+  # Hyper-parameter values for tuning
+  tune_grid <-
+    expand.grid(mtry = c(1, 3))
+
+  raf_t <-
+    tune_raf(
+      data = abies2,
+      response = "pr_ab",
+      predictors = c("aet", "cwd", "awc", "depth"),
+      predictors_f = c("landform"),
+      partition = ".part",
+      grid = tune_grid,
+      thr = "max_sens_spec",
+      metric = "TSS"
+    )
+
+  expect_equal(class(raf_t), "list")
+  expect_equal(length(raf_t), 6)
+})
+
+
+test_that("test of 0-1 response argument", {
+  skip_on_cran()
+  # Hyper-parameter values for tuning
+  tune_grid <-
+    expand.grid(
+      mtry = c(1, 3),
+      ntree = c(200, 400)
+    )
+
+  expect_error(
+    raf_t <-
+      tune_raf(
+        data = abies2,
+        response = "aet",
+        predictors = c("aet", "cwd", "awc", "depth"),
+        predictors_f = c("landform"),
+        partition = ".part",
+        grid = tune_grid,
+        thr = "max_sens_spec",
+        metric = "TSS"
+      )
+  )
+})
+
+
+test_that("test NULL in predictors_f", {
+  skip_on_cran()
+  tune_grid <-
+    expand.grid(
+      mtry = c(1, 3),
+      ntree = c(200, 400)
+    )
+
+  raf_t <-
+    tune_raf(
+      data = abies2,
+      response = "pr_ab",
+      predictors = c(
+        "aet",
+        "cwd",
+        "tmin",
+        "ppt_djf",
+        "ppt_jja",
+        "ppt_jja",
+        "pH",
+        "awc",
+        "depth"
+      ),
+      predictors_f = NULL,
+      partition = ".part",
+      grid = tune_grid,
+      thr = "max_sens_spec",
+      metric = "TSS"
+    )
+
+  expect_equal(class(raf_t), "list")
+  expect_equal(length(raf_t), 6)
+})
+
+test_that("test if remove NAs rows works", {
+  skip_on_cran()
+  # Hyper-parameter values for tuning
+  tune_grid <-
+    expand.grid(
+      mtry = c(1, 3),
+      ntree = c(200, 400)
+    )
+
+  # Insert NAs in rows 3 and 4 for response column.
+  abies2[3:4, 1] <- NA
+
+  expect_message(
+    raf_t <-
+      tune_raf(
+        data = abies2,
+        response = "pr_ab",
+        predictors = c(
+          "aet",
+          "cwd",
+          "tmin",
+          "ppt_djf",
+          "ppt_jja",
+          "ppt_jja",
+          "pH",
+          "awc",
+          "depth"
+        ),
+        predictors_f = c("landform"),
+        partition = ".part",
+        grid = tune_grid,
+        thr = "max_sens_spec",
+        metric = "TSS"
+      )
+  )
+
+  # Compare if the 2 NAs were removed
+  testthat:::compare.numeric(nrow(abies2), nrow(raf_t$data_ens))
+})
+
+test_that("test fit_formula", {
+  skip_on_cran()
+  # Hyper-parameter values for tuning
+  tune_grid <-
+    expand.grid(
+      mtry = c(1, 3),
+      ntree = c(200, 400)
+    )
+
+  raf_t <-
+    tune_raf(
+      data = abies2,
+      response = "pr_ab",
+      predictors = c("aet", "ppt_jja", "depth"),
+      predictors_f = c("landform"),
+      fit_formula = formula("pr_ab ~ aet + ppt_jja + depth + landform"),
+      partition = ".part",
+      grid = tune_grid,
+      thr = "max_sens_spec",
+      metric = "TSS",
+      n_cores = 2
+    )
+  expect_equal(length(raf_t), 6)
+})
+
+test_that("grid = NULL ", {
+  skip_on_cran()
+  tune_grid <-
+    expand.grid(
+      mtry = c(1, 3),
+      ntree = c(200, 400)
+    )
+  expect_message(
+    raf_t <-
+      tune_raf(
+        data = abies2,
+        response = "pr_ab",
+        predictors = c("aet", "awc", "depth"),
+        predictors_f = c("landform"),
+        partition = ".part",
+        grid = NULL,
+        thr = "max_sens_spec",
+        metric = "TSS"
+      )
+  )
+})
+
+
+test_that("missuse of grid ", {
+  skip_on_cran()
+  # Hyper-parameter values for tuning
+  tune_grid <-
+    expand.grid(
+      mtrsdfy = seq(1, 4, 1),
+      ntrdee = c(400, 600)
+    )
+
+  expect_error(
+    raf_t <-
+      tune_raf(
+        data = abies2,
+        response = "pr_ab",
+        predictors = c("aet", "awc", "depth"),
+        predictors_f = c("landform"),
+        partition = ".part",
+        grid = tune_grid,
+        thr = "max_sens_spec",
+        metric = "TSS"
+      )
+  )
+})
